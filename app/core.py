@@ -1,6 +1,7 @@
 from .lexical import Lexer
 from .parser import Parser
 
+
 def run_compiler(code):
     lexer = Lexer(code)
     tokens = lexer.tokenize()
@@ -12,5 +13,3 @@ def run_compiler(code):
     output += ["\n--- Symbol Table ---"]
     for var, (typ, val) in symbol_table.items():
         output.append(f"{var}: {typ} = {val}")
-
-
