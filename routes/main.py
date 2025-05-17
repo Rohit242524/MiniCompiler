@@ -1,7 +1,5 @@
 from flask import render_template, request
-
 from app.core import run_compiler
-
 
 def setup_routes(app):
     @app.route("/")

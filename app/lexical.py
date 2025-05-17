@@ -1,7 +1,5 @@
 import re
-
 from .token import tok_regex
-
 
 class Lexer:
     def __init__(self, code):

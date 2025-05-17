@@ -1,15 +1,27 @@
-from .lexical import Lexer
-from .parser import Parser
-
+from flask import render_template
+from app.lexical import Lexer
+from app.parser import Parser
 
 def run_compiler(code):
-    lexer = Lexer(code)
-    tokens = lexer.tokenize()
-    parser = Parser(tokens)
-    parse_tree, symbol_table = parser.parse()
+    try:
+        lexer = Lexer(code)
+        tokens = lexer.tokenize()
 
-    output = ["--- Tokens ---"]
-    output += [str(token) for token in tokens]
-    output += ["\n--- Symbol Table ---"]
-    for var, (typ, val) in symbol_table.items():
-        output.append(f"{var}: {typ} = {val}")
+        parser = Parser(tokens)
+        parse_tree, symbol_table = parser.parse()
+
+        return render_template(
+            "index.html",
+            tokens=tokens,
+            parse_tree=parse_tree,
+            symbol_table=symbol_table,
+            error=None
+        )
+    except Exception as e:
+        return render_template(
+            "index.html",
+            tokens=None,
+            parse_tree=None,
+            symbol_table=None,
+            error=str(e)
+        )
