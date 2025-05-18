@@ -13,13 +13,11 @@ class Lexer:
             if kind == "NUMBER":
                 value = float(value) if "." in value else int(value)
                 self.tokens.append((value, "NUMBER"))
-            elif kind == "ID":
-                self.tokens.append((value, "ID"))
-            elif kind == "TYPE":
-                self.tokens.append((value, "TYPE"))
-            elif kind in ("ASSIGN", "END", "OP"):
+            elif kind in ("ID", "TYPE", "KEYWORD", "PREPROC_KEYWORD"):
                 self.tokens.append((value, kind))
-            elif kind in ("SKIP", "NEWLINE"):
+            elif kind in ("ASSIGN", "END", "OP", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "COMMA", "PREPROC_SYMBOL", "PUNCTUATOR"):
+                self.tokens.append((value, kind))
+            elif kind in ("SKIP", "NEWLINE", "COMMENT"):  # Skip comments
                 continue
             elif kind == "STRING":
                 self.tokens.append((value, "STRING"))

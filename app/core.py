@@ -15,13 +15,19 @@ def run_compiler(code):
             tokens=tokens,
             parse_tree=parse_tree,
             symbol_table=symbol_table,
-            error=None
+            error=None,
+            code=code
         )
     except Exception as e:
+        # Find the tokens up to the point of the error
+        error_pos = parser.pos if 'parser' in locals() else 0
+        tokens_up_to_error = tokens[:error_pos] if 'tokens' in locals() else []
+
         return render_template(
             "index.html",
-            tokens=None,
+            tokens=tokens_up_to_error,  # Only show tokens up to the error
             parse_tree=None,
             symbol_table=None,
-            error=str(e)
+            error=f"Error occurred here: {str(e)}",
+            code=code
         )
