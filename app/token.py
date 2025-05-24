@@ -1,35 +1,52 @@
 token_specification = [
-    ("NUMBER", r"\d+(\.\d+)?"),
-    ("TYPE", r"\bint\b|\bfloat\b|\bchar\b|\b_Bool\b"),
-    ("KEYWORD", r"\breturn\b|\bvoid\b|\bif\b|\belse\b|\bwhile\b|\bfor\b|\bbreak\b|\bcontinue\b|\bswitch\b|\bcase\b|\bdefault\b|\bdo\b|\bconst\b|\bstatic\b|\bstruct\b|\bunion\b|\btrue\b|\bfalse\b"),
-    ("INCLUDE_DIRECTIVE", r"#include"),  # Matches #include as a single token
-    ("INCLUDE_PATH", r"<[^>]+>"),  # Matches <stdio.h> or similar as a single token
-    ("PREPROC_SYMBOL", r"#"),
-    ("PREPROC_KEYWORD", r"\bdefine\b"),
-    ("ID", r"[A-Za-z_]\w*"),
+    # Floating-point numbers
+    ("FLOAT_SCI", r"-?\d+\.\d*[eE][+-]?\d+"),
+    ("FLOAT_FL", r"-?\d+\.\d*([fF][lL]|[lL][fF])"),
+    ("FLOAT_F", r"-?\d+\.\d*[fF](?![lL])"),
+    ("FLOAT_L", r"-?\d+\.\d*[lL](?![fF])"),
+    ("FLOAT", r"-?\d+\.\d*(?![fFlLeE])"),
+    # Integers
+    ("INTEGER", r"-?\d+([uU]|[lL]|[uU][lL]|[lL][uU])?"),
+    # Types
+    ("TYPE", r"\b(int|float|double|char|short|long|void|signed|unsigned|_Bool|_Complex|_Imaginary)\b"),
+    
+    # Keywords
+    ("KEYWORD", r"\b(auto|break|case|const|continue|default|do|else|enum|extern|for|goto|if|inline|register|restrict|return|sizeof|static|struct|switch|typedef|union|volatile|while)\b"),
+    
+    # Preprocessor
+    ("PREPROCESSOR", r"#\s*(include|define|undef|if|ifdef|ifndef|else|elif|endif|line|error|pragma)"),
+    ("INCLUDE_PATH", r"(<[^>]+>|\"[^\"]+\")"),
+    # Identifiers
+    ("ID", r"[a-zA-Z_]\w*"),
+    # Operators
     ("ASSIGN", r"="),
-    ("COMPOUND_ASSIGN", r"\+=|-=|\*=|/=|&=|\|=|\^=|<<=|>>="),
-    ("END", r";"),
-    ("OP", r"[+\-*/]"),
-    ("INC_DEC", r"\+\+|--"),
+    ("ARITHMETIC_OP", r"\+|-|\*|/|%"),
     ("BITWISE_OP", r"&|\||\^|~|<<|>>"),
-    ("COMP_OP", r"==|!=|<=|>=|<|>"),
-    ("LOGICAL_OP", r"&&|\|\||\!"),
-    ("ARROW", r"->"),
+    ("LOGICAL_OP", r"&&\|\||!"),
+    ("RELATIONAL_OP", r"==|!=|<|>|<=|>="),
+    ("INC_DEC", r"\+\+|--"),
+    ("COMPOUND_ASSIGN", r"\+=|-=|\*=|/=|%=|&=|\|=|\^=|<<=|>>="),
+    ("SIZEOF", r"sizeof"),
+    # Punctuators
     ("LPAREN", r"\("),
     ("RPAREN", r"\)"),
-    ("LBRACE", r"{"),
-    ("RBRACE", r"}"),
+    ("LBRACE", r"\{"),
+    ("RBRACE", r"\}"),
     ("LBRACKET", r"\["),
     ("RBRACKET", r"\]"),
     ("COMMA", r","),
-    ("COLON", r":"),
+    ("SEMICOLON", r";"),
+    ("DOT", r"\."),
+    ("ARROW", r"->"),
+    # Strings and chars
+    ("STRING", r'"(?:\\.|[^"\\])*"'),
+    ("CHAR", r"'(?:\\.|[^'\\])'"),
+    # Whitespace and comments (to skip)
+    ("WHITESPACE", r"[ \t]+"),
     ("NEWLINE", r"\r\n|\n|\r"),
-    ("SKIP", r"[ \t]+"),
-    ("STRING", r'"[^"\n]*"'),  # Valid string
-    ("UNTERMINATED_STRING", r'"[^"\n]*'),  # Unterminated string (starts with " but doesn't end with ")
-    ("COMMENT", r"//.*?\n|/\*.*?\*/"),
-    ("PUNCTUATOR", r"\."),
+    ("COMMENT", r"//.*?\n|/\*[\s\S]*?\*/"),
+    # Mismatch (must be last)
     ("MISMATCH", r"."),
 ]
-tok_regex = "|".join(f"(?P<{name}>{pattern})" for name, pattern in token_specification)
+
+tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)

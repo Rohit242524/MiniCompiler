@@ -1,73 +1,150 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!--font-->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
-
-    <title>Mini Compiler</title>
+    <title>C Compiler</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h2>Mini Compiler (Lexical, Syntax, Semantic)</h2>
-    <form method="POST" action="/compile">
-        <label>Enter your code:</label><br>
-        <textarea name="code" required>{{ code if code else '' }}</textarea><br><br>
-        <button type="submit">Compile</button>
-    </form>
+    <div class="container">
+        <h1>C Compiler</h1>
+        <form method="post" action="/compile">
+            <textarea name="code" rows="10" cols="50">{{ code }}</textarea><br>
+            <input type="submit" value="Compile">
+        </form>
+        <h2>Results</h2>
 
-    <!-- Tokens Table -->
-    {% if tokens %}
-    <div class="output-table">
-        <div class="tokenization-table-container">
-            <h3>Tokens</h3>
-            <table class="tokenization-table">
-              <tr>
-                <th>#</th>
-                <th>Lexeme</th>
-                <th>Token Type</th>
-              </tr>
-              {% for token in tokens %}
-              <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ token[0] }}</td>
-                <td>{{ token[1] }}</td>
-              </tr>
-              {% endfor %}
-            </table>
+        <!-- Tokens Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>Tokens</h3>
+                <span class="toggle-btn">▼</span>
+            </div>
+            <div class="section-content open">
+                {% if tokens %}
+                <table>
+                    <tr>
+                        <th>Index</th>
+                        <th>Value</th>
+                        <th>Type</th>
+                    </tr>
+                    {% for token in tokens %}
+                    <tr>
+                        <td>{{ loop.index0 }}</td>
+                        <td>{{ token[0] }}</td>
+                        <td>{{ token[1] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                <p>No tokens generated.</p>
+                {% endif %}
+            </div>
         </div>
 
-        <!-- Symbol Table -->
-        <div class="symbol-table-container">
-            {% if symbol_table %}
-            <h3>Symbol Table</h3>
-            <table class="symbol-table">
-              <tr>
-                <th>#</th>
-                <th>Identifier</th>
-                <th>Type</th>
-                <th>Value</th>
-              </tr>
-              {% for key, value in symbol_table.items() %}
-              <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ key }}</td>
-                <td>{{ value[0] }}</td>
-                <td>{{ value[1] }}</td>
-              </tr>
-              {% endfor %}
-            </table>
-            {% endif %}
-
-            <!-- Error Display -->
-            {% if error %}
-            <div style="color: red; font-weight: bold;">
-                <p>Error: {{ error }}</p>
+        <!-- Parse Tree Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>Parse Tree</h3>
+                <span class="toggle-btn">▼</span>
             </div>
-            {% endif %}
+            <div class="section-content open">
+                {% if parse_tree %}
+                <ul>
+                    {% for node in parse_tree %}
+                    <li>
+                        <strong>{{ node[0] }}</strong>:
+                        {% if node[0] == 'PREPROCESSOR' %}
+                            {{ node[1] }}
+                        {% elif node[0] == 'FUNC_DEF' %}
+                            Return Type: {{ node[1] }}, Name: {{ node[2] }}, Parameters: {{ node[3] }}
+                            <ul>
+                                {% for stmt in node[4] %}
+                                <li class="parse-tree-node">
+                                    {% if stmt[0] == 'VAR_DECL' %}
+                                        Variable Declaration - Type: {{ stmt[1] }}, Name: {{ stmt[2] }}, Value: {{ stmt[3] }}
+                                    {% elif stmt[0] == 'IF' %}
+                                        If Statement - Condition: {{ stmt[1] }}
+                                        <ul>
+                                            {% for sub_stmt in stmt[2] %}
+                                            <li class="parse-tree-node">
+                                                {% if sub_stmt[0] == 'ASSIGN' %}
+                                                    Assignment - Variable: {{ sub_stmt[1] }}, Value: {{ sub_stmt[2] }}
+                                                {% endif %}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% if stmt[3] %}
+                                        <ul>
+                                            <li class="parse-tree-node">Else: {{ stmt[3] }}</li>
+                                        </ul>
+                                        {% endif %}
+                                    {% elif stmt[0] == 'RETURN' %}
+                                        Return: {{ stmt[1] }}
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No parse tree generated.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Symbol Table Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>Symbol Table</h3>
+                <span class="toggle-btn">▼</span>
+            </div>
+            <div class="section-content open">
+                {% if symbol_table %}
+                <table>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Type</th>
+                        <th>Value</th>
+                    </tr>
+                    {% for var, info in symbol_table.items() %}
+                    <tr>
+                        <td>{{ var }}</td>
+                        <td>{{ info[0] }}</td>
+                        <td>{{ info[1] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                <p>No symbol table generated.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Error Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3>Error</h3>
+                <span class="toggle-btn">▼</span>
+            </div>
+            <div class="section-content open">
+                {% if error %}
+                <p class="error">{{ error | safe }}</p>
+                {% else %}
+                <p>None</p>
+                {% endif %}
+            </div>
         </div>
     </div>
-    {% endif %}
+
+    <script>
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const toggleBtn = header.querySelector('.toggle-btn');
+            content.classList.toggle('open');
+            toggleBtn.classList.toggle('open');
+        }
+    </script>
 </body>
 </html>
