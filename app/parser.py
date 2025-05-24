@@ -8,7 +8,9 @@ class Parser:
 
     def advance(self):
         self.pos += 1
-        self.current = self.tokens[self.pos] if self.pos < len(self.tokens) else (None, None)
+        self.current = (
+            self.tokens[self.pos] if self.pos < len(self.tokens) else (None, None)
+        )
         print(f"Parser: Advanced to position {self.pos}, Current token: {self.current}")
 
     def match(self, expected_type):
@@ -17,11 +19,16 @@ class Parser:
             self.parse_tree.append(self.current)
             self.advance()
         else:
-            raise SyntaxError(f"Parser: Expected {expected_type}, got {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}")
+            raise SyntaxError(
+                f"Parser: Expected {expected_type}, got {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}"
+            )
 
     def expression(self):
         print(f"Parser: Parsing expression at position {self.pos}")
-        if self.current[1] in ("LOGICAL_OP", "BITWISE_OP") and self.current[0] in ("!", "~"):
+        if self.current[1] in ("LOGICAL_OP", "BITWISE_OP") and self.current[0] in (
+            "!",
+            "~",
+        ):
             op = self.current[0]
             self.match(self.current[1])
             operand = self.expression()
@@ -32,15 +39,32 @@ class Parser:
             expr = self.expression()
             self.match("RPAREN")
             left = expr
-        elif self.current[1] in ["INTEGER", "FLOAT", "FLOAT_F", "FLOAT_L", "FLOAT_FL", "FLOAT_SCI", "ID", "STRING", "CHAR"]:
+        elif self.current[1] in [
+            "INTEGER",
+            "FLOAT",
+            "FLOAT_F",
+            "FLOAT_L",
+            "FLOAT_FL",
+            "FLOAT_SCI",
+            "ID",
+            "STRING",
+            "CHAR",
+        ]:
             token_type = self.current[1]
             token_value = self.current[0]
             self.match(self.current[1])
             left = (token_value, token_type)
         else:
-            raise SyntaxError(f"Parser: Expected number, variable, string, char, or (, got {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}")
+            raise SyntaxError(
+                f"Parser: Expected number, variable, string, char, or (, got {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}"
+            )
 
-        while self.current[1] in ("ARITHMETIC_OP", "RELATIONAL_OP", "LOGICAL_OP", "BITWISE_OP"):
+        while self.current[1] in (
+            "ARITHMETIC_OP",
+            "RELATIONAL_OP",
+            "LOGICAL_OP",
+            "BITWISE_OP",
+        ):
             if self.current[1] == "ARITHMETIC_OP":
                 op = self.current[0]
                 self.match("ARITHMETIC_OP")
@@ -60,13 +84,25 @@ class Parser:
                 self.match("LPAREN")
                 right = self.expression()
                 self.match("RPAREN")
-            elif self.current[1] in ["INTEGER", "FLOAT", "FLOAT_F", "FLOAT_L", "FLOAT_FL", "FLOAT_SCI", "ID", "STRING", "CHAR"]:
+            elif self.current[1] in [
+                "INTEGER",
+                "FLOAT",
+                "FLOAT_F",
+                "FLOAT_L",
+                "FLOAT_FL",
+                "FLOAT_SCI",
+                "ID",
+                "STRING",
+                "CHAR",
+            ]:
                 token_type = self.current[1]
                 token_value = self.current[0]
                 self.match(self.current[1])
                 right = (token_value, token_type)
             else:
-                raise SyntaxError(f"Parser: Expected number, variable, string, char, or (, got {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}")
+                raise SyntaxError(
+                    f"Parser: Expected number, variable, string, char, or (, got {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}"
+                )
 
             left = (left, op, right)
 
@@ -74,18 +110,33 @@ class Parser:
 
     def evaluate_expression(self, expr):
         print(f"Parser: Evaluating expression: {expr}")
-        if isinstance(expr, tuple) and len(expr) == 2 and expr[1] in ("INTEGER", "FLOAT", "FLOAT_F", "FLOAT_L", "FLOAT_FL", "FLOAT_SCI", "STRING", "CHAR", "ID"):
+        if (
+            isinstance(expr, tuple)
+            and len(expr) == 2
+            and expr[1]
+            in (
+                "INTEGER",
+                "FLOAT",
+                "FLOAT_F",
+                "FLOAT_L",
+                "FLOAT_FL",
+                "FLOAT_SCI",
+                "STRING",
+                "CHAR",
+                "ID",
+            )
+        ):
             value, token_type = expr
             if token_type == "INTEGER":
                 return int(value)
             elif token_type in ("FLOAT", "FLOAT_F", "FLOAT_L", "FLOAT_FL", "FLOAT_SCI"):
                 try:
                     if token_type == "FLOAT_F":
-                        return float(value.rstrip('fF'))
+                        return float(value.rstrip("fF"))
                     elif token_type == "FLOAT_L":
-                        return float(value.rstrip('lL'))
+                        return float(value.rstrip("lL"))
                     elif token_type == "FLOAT_FL":
-                        return float(value.rstrip('fFlL').rstrip('lL').rstrip('fF'))
+                        return float(value.rstrip("fFlL").rstrip("lL").rstrip("fF"))
                     elif token_type == "FLOAT_SCI":
                         return float(value)
                     else:  # FLOAT
@@ -173,10 +224,21 @@ class Parser:
             include_path = self.current[0]
             self.match("INCLUDE_PATH")
             return ("PREPROCESSOR", f"#include {include_path}")
+        
         elif directive.startswith("#define"):
             macro_name = self.current[0]
             self.match("ID")
-            if self.current[1] in ("INTEGER", "FLOAT", "FLOAT_F", "FLOAT_L", "FLOAT_FL", "FLOAT_SCI", "ID", "STRING", "CHAR"):
+            if self.current[1] in (
+                "INTEGER",
+                "FLOAT",
+                "FLOAT_F",
+                "FLOAT_L",
+                "FLOAT_FL",
+                "FLOAT_SCI",
+                "ID",
+                "STRING",
+                "CHAR",
+            ):
                 macro_value = self.current[0]
                 self.match(self.current[1])
             else:
@@ -226,7 +288,9 @@ class Parser:
                 elif self.current[1] == "RPAREN":
                     break
                 else:
-                    raise SyntaxError(f"Parser: Expected comma or closing parenthesis in function parameters, got {self.current[1]} at position {self.pos}")
+                    raise SyntaxError(
+                        f"Parser: Expected comma or closing parenthesis in function parameters, got {self.current[1]} at position {self.pos}"
+                    )
         self.match("RPAREN")
         return params
 
@@ -254,14 +318,16 @@ class Parser:
             print("Parser: Reached EOF in statement")
             return None
 
-        print(f"Parser: Parsing statement at position {self.pos}, Current token: {self.current}")
+        print(
+            f"Parser: Parsing statement at position {self.pos}, Current token: {self.current}"
+        )
 
         if self.current[1] == "SEMICOLON":
             self.match("SEMICOLON")
             return ("EMPTY",)
 
         if self.current[1] == "PREPROCESSOR":
-            return self.preprocessor_directive()
+            return self.preprocessor_directive() 
 
         if self.current[1] == "TYPE":
             var_type = self.current[0]
@@ -275,14 +341,30 @@ class Parser:
                 value = self.expression()
                 self.match("SEMICOLON")
                 evaluated_value = self.evaluate_expression(value)
-                if var_type in ("int", "short", "long", "signed", "unsigned", "_Bool") and isinstance(evaluated_value, int):
+                if var_type in (
+                    "int",
+                    "short",
+                    "long",
+                    "signed",
+                    "unsigned",
+                    "_Bool",
+                ) and isinstance(evaluated_value, int):
                     self.symbol_table[var_name] = (var_type, evaluated_value)
-                elif var_type in ("float", "double") and isinstance(evaluated_value, float):
+                    
+                elif var_type in ("float", "double") and isinstance(
+                    evaluated_value, float
+                ):
                     self.symbol_table[var_name] = (var_type, evaluated_value)
-                elif var_type == "char" and isinstance(evaluated_value, str) and len(evaluated_value) == 1:
+                elif (
+                    var_type == "char"
+                    and isinstance(evaluated_value, str)
+                    and len(evaluated_value) == 1
+                ):
                     self.symbol_table[var_name] = (var_type, evaluated_value)
                 else:
-                    raise TypeError(f"Parser: Type mismatch for '{var_name}': Expected {var_type}, got {type(evaluated_value)}")
+                    raise TypeError(
+                        f"Parser: Type mismatch for '{var_name}': Expected {var_type}, got {type(evaluated_value)}"
+                    )
                 return ("VAR_DECL", var_type, var_name, evaluated_value)
             else:
                 self.match("SEMICOLON")
@@ -298,17 +380,34 @@ class Parser:
                 self.match("SEMICOLON")
                 evaluated_value = self.evaluate_expression(value)
                 var_type = self.symbol_table.get(var_name, ("int", None))[0]
-                if var_type in ("int", "short", "long", "signed", "unsigned", "_Bool") and isinstance(evaluated_value, int):
+                if var_type in (
+                    "int",
+                    "short",
+                    "long",
+                    "signed",
+                    "unsigned",
+                    "_Bool",
+                ) and isinstance(evaluated_value, int):
                     self.symbol_table[var_name] = (var_type, evaluated_value)
-                elif var_type in ("float", "double") and isinstance(evaluated_value, float):
+                elif var_type in ("float", "double") and isinstance(
+                    evaluated_value, float
+                ):
                     self.symbol_table[var_name] = (var_type, evaluated_value)
-                elif var_type == "char" and isinstance(evaluated_value, str) and len(evaluated_value) == 1:
+                elif (
+                    var_type == "char"
+                    and isinstance(evaluated_value, str)
+                    and len(evaluated_value) == 1
+                ):
                     self.symbol_table[var_name] = (var_type, evaluated_value)
                 else:
-                    raise TypeError(f"Parser: Type mismatch for assignment to '{var_name}': Expected {var_type}, got {type(evaluated_value)}")
+                    raise TypeError(
+                        f"Parser: Type mismatch for assignment to '{var_name}': Expected {var_type}, got {type(evaluated_value)}"
+                    )
                 return ("ASSIGN", var_name, evaluated_value)
             else:
-                raise SyntaxError(f"Parser: Expected '=', got {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}")
+                raise SyntaxError(
+                    f"Parser: Expected '=', got {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}"
+                )
 
         elif self.current[1] == "KEYWORD" and self.current[0] == "if":
             return self.if_statement()
@@ -317,7 +416,9 @@ class Parser:
             return self.return_statement()
 
         else:
-            raise SyntaxError(f"Parser: Unknown statement: {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}")
+            raise SyntaxError(
+                f"Parser: Unknown statement: {self.current[1] if self.current[1] else 'EOF'} at position {self.pos}"
+            )
 
     def parse(self):
         print("Parser: Starting parse")

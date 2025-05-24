@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        <!-- Parse Tree Section -->
+        <!-- Parse Tree Section (Updated to Table Format) -->
         <div class="section">
             <div class="section-header" onclick="toggleSection(this)">
                 <h3>Parse Tree</h3>
@@ -49,45 +49,50 @@
             </div>
             <div class="section-content open">
                 {% if parse_tree %}
-                <ul>
-                    {% for node in parse_tree %}
-                    <li>
-                        <strong>{{ node[0] }}</strong>:
-                        {% if node[0] == 'PREPROCESSOR' %}
-                            {{ node[1] }}
-                        {% elif node[0] == 'FUNC_DEF' %}
-                            Return Type: {{ node[1] }}, Name: {{ node[2] }}, Parameters: {{ node[3] }}
-                            <ul>
-                                {% for stmt in node[4] %}
-                                <li class="parse-tree-node">
-                                    {% if stmt[0] == 'VAR_DECL' %}
-                                        Variable Declaration - Type: {{ stmt[1] }}, Name: {{ stmt[2] }}, Value: {{ stmt[3] }}
-                                    {% elif stmt[0] == 'IF' %}
-                                        If Statement - Condition: {{ stmt[1] }}
-                                        <ul>
-                                            {% for sub_stmt in stmt[2] %}
-                                            <li class="parse-tree-node">
-                                                {% if sub_stmt[0] == 'ASSIGN' %}
-                                                    Assignment - Variable: {{ sub_stmt[1] }}, Value: {{ sub_stmt[2] }}
-                                                {% endif %}
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                        {% if stmt[3] %}
-                                        <ul>
-                                            <li class="parse-tree-node">Else: {{ stmt[3] }}</li>
-                                        </ul>
-                                        {% endif %}
-                                    {% elif stmt[0] == 'RETURN' %}
-                                        Return: {{ stmt[1] }}
+                <table>
+                    <tr>
+                        <th>Level</th>
+                        <th>Node Type</th>
+                        <th>Details</th>
+                    </tr>
+                    {% macro render_parse_tree(nodes, level=0) %}
+                        {% for node in nodes %}
+                        <tr class="parse-tree-level-{{ level }}">
+                            <td>{{ level }}</td>
+                            <td>{{ node[0] }}</td>
+                            <td>
+                                {% if node[0] == 'PREPROCESSOR' %}
+                                    {{ node[1] }}
+                                {% elif node[0] == 'FUNC_DEF' %}
+                                    Return Type: {{ node[1] }}, Name: {{ node[2] }}, Parameters: {{ node[3] }}
+                                {% elif node[0] == 'VAR_DECL' %}
+                                    Type: {{ node[1] }}, Name: {{ node[2] }}, Value: {{ node[3] }}
+                                {% elif node[0] == 'IF' %}
+                                    Condition: 
+                                    {% if node[1][0][1] == 'ID' %}
+                                        {{ node[1][0][0] }} {{ node[1][1] }} {{ node[1][2][0] }}
+                                    {% else %}
+                                        {{ node[1] }}
                                     {% endif %}
-                                </li>
-                                {% endfor %}
-                            </ul>
+                                {% elif node[0] == 'ASSIGN' %}
+                                    Variable: {{ node[1] }}, Value: {{ node[2] }}
+                                {% elif node[0] == 'RETURN' %}
+                                    Value: {{ node[1] }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% if node[0] == 'FUNC_DEF' %}
+                            {{ render_parse_tree(node[4], level + 1) }}
+                        {% elif node[0] == 'IF' %}
+                            {{ render_parse_tree(node[2], level + 1) }}
+                            {% if node[3] %}
+                            {{ render_parse_tree(node[3], level + 1) }}
+                            {% endif %}
                         {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
+                        {% endfor %}
+                    {% endmacro %}
+                    {{ render_parse_tree(parse_tree) }}
+                </table>
                 {% else %}
                 <p>No parse tree generated.</p>
                 {% endif %}
